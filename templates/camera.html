@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera - Emotion Recognition</title>
+    <style>
+        :root {
+            --teal-green: #006158;
+            --light-teal: rgba(0, 97, 88, 0.8);
+            --cream-bg: #f8f5e6;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cream-bg);
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+
+        .camera-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            width: 480px;
+            border-radius: 15px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 3px solid var(--teal-green);
+        }
+
+        .page-title {
+            color: var(--teal-green);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .camera-view {
+            width: 100%;
+            height: 360px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .camera-view video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .capture-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--teal-green);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .capture-button:hover {
+            background-color: #00514c;
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .capture-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .camera-instructions {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+            background-color: rgba(0, 97, 88, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            line-height: 1.4;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .loading-circle {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 97, 88, 0.3);
+            border-top: 5px solid var(--teal-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 5;
+        }
+        
+        .error-message {
+            display: none;
+            color: #e74c3c;
+            background-color: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .camera-container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .camera-view {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="camera-container">
+        <h2 class="page-title">Emotion Recognition</h2>
+        <div class="camera-view">
+            <video id="video" autoplay></video>
+        </div>
+        <button class="capture-button" id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
+        <div class="camera-instructions">
+            Position your face in the center of the frame. Make sure your face is well-lit and clearly visible for the best results.
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="overlay" id="overlay"></div>
+    <div class="loading" id="loading">
+        <div class="loading-circle"></div>
+    </div>
+
+    <script>
+    const video = document.getElementById('video');
+    const captureBtn = document.getElementById('captureBtn');
+    const loading = document.getElementById('loading');
+    const overlay = document.getElementById('overlay');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Access the camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+            video.srcObject = stream;
+        })
+        .catch((err) => {
+            console.error("Error accessing the camera: ", err);
+            errorMessage.textContent = "Could not access the camera. Please ensure camera permissions are enabled.";
+            errorMessage.style.display = 'block';
+            captureBtn.disabled = true;
+        });
+
+    function capturePhoto() {
+        // Show loading indicator
+        loading.style.display = 'block';
+        overlay.style.display = 'block';
+        captureBtn.disabled = true;
+        errorMessage.style.display = 'none';
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convert the image to a Blob and send it via FormData
+        canvas.toBlob((blob) => {
+            const formData = new FormData();
+            formData.append('image', blob, 'photo.png');
+
+            fetch('/process_image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading indicator
+                loading.style.display = 'none';
+                overlay.style.display = 'none';
+                captureBtn.disabled = false;
+
+                if (data.error) {
+                    // Display error message to user
+                    errorMessage.textContent = data.error;
+                    errorMessage.style.display = 'block';
+                } else {
+                    window.location.href = `/result?emotion=${encodeURIComponent(data.emotion)}&scores=${encodeURIComponent(data.scores)}`;
+                }
+            })
+            .catch((error) => {
+                // Hide loading indicator
+                loading.style.display = 'none';
+                overlay.style.display = 'none';
+                captureBtn.disabled = false;
+
+                console.error('Error:', error);
+                errorMessage.textContent = "An error occurred while processing the image. Please try again.";
+                errorMessage.style.display = 'block';
+            });
+        }, 'image/png');
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeelCam - Emotion Recognition from Facial Expressions</title>
+    <style>
+        /* Your existing styles remain unchanged */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+            background-color: #f8f6f0;
+        }
+
+        .announcement-bar {
+            background-color: #f8e7eb;
+            color: #333;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .announcement-bar a {
+            color: #333;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        nav {
+            background: #006158;
+            padding: 15px 5%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+            color: white;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            margin-left: 30px;
+        }
+
+        nav li {
+            padding: 0;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #f8e7eb;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            min-height: calc(100vh - 108px);
+        }
+
+        .content-left {
+            width: 60%;
+            background: #006158;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+
+        .left-content-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .brand-heading {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            position: relative;
+            display: inline-block;
+        }
+
+        .brand-heading::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: #ffd700;
+        }
+
+        .brand-subheading {
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .content-right {
+            width: 40%;
+            background: #f8f6f0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .content-right-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .main-image {
+            width: 90%;
+            height: auto;
+            max-height: 65%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .small-image {
+            width: 40%;
+            height: auto;
+            object-fit: contain;
+            margin-top: -20px;
+            margin-bottom: 20px;
+        }
+
+        .about-cloud {
+            width: 90%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 30px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-cloud:before {
+            content: "";
+            position: absolute;
+            bottom: -20px;
+            left: 30px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .about-cloud:after {
+            content: "";
+            position: absolute;
+            bottom: -35px;
+            left: 15px;
+            width: 25px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .about-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #006158;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .about-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            text-align: justify;
+        }
+
+        .tech-specs {
+            width: 90%;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .tech-spec {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .tech-spec-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #006158;
+        }
+
+        .tech-spec-label {
+            font-size: 12px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px 20px;
+            border-radius: 50px;
+            width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .option-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .option-icon {
+            width: 24px;
+            height: 24px;
+            color: white;
+            margin-right: 12px;
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .human-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .human-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .human-icon svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+
+        .human-list {
+            position: absolute;
+            top: 60px;
+            right: 5%;
+            width: 200px;
+            background: #f8f6f0;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .human-list.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .human-list ul {
+            list-style: none;
+        }
+
+        .human-list li {
+            padding: 12px 15px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .human-list li:hover {
+            background-color: #e6e2d9;
+        }
+
+        .human-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .content-left,
+            .content-right {
+                width: 100%;
+            }
+
+            .content-left {
+                min-height: 60vh;
+                padding: 40px 20px;
+            }
+
+            .content-right {
+                min-height: 40vh;
+            }
+
+            .brand-heading {
+                font-size: 48px;
+            }
+
+            .main-image {
+                width: 70%;
+            }
+
+            .small-image {
+                width: 30%;
+            }
+
+            .about-cloud,
+            .tech-specs {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                padding: 15px 20px;
+            }
+
+            nav ul {
+                gap: 15px;
+            }
+
+            .brand-heading {
+                font-size: 38px;
+            }
+
+            .option-card {
+                width: 100%;
+            }
+
+            .tech-spec-value {
+                font-size: 16px;
+            }
+
+            .tech-spec-label {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="announcement-bar">
+        <!-- Empty as per new index.html, can add content if desired -->
+    </div>
+
+    <nav>
+        <div class="nav-left">
+            <div class="logo">FeelCam</div>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('history') }}">History</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <div class="human-icon">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                >
+                    <path
+                        d="M12 2c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 14c-3.31 0-6 2.69-6 6h12c0-3.31-2.69-6-6-6z"
+                    />
+                </svg>
+            </div>
+        </div>
+    </nav>
+
+    <div class="human-list">
+        <ul>
+            <li><a href="{{ url_for('show_profile') }}">Profile</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="content-left">
+            <div class="left-content-container">
+                <h1 class="brand-heading">FeelCam</h1>
+                <p class="brand-subheading">
+                    Welcome, {{ session.username }}! Analyze facial expressions with precision and ease.
+                </p>
+
+                <img
+                    src="{{ url_for('static', filename='image01.jpg') }}"
+                    alt="People with different emotions"
+                    class="small-image"
+                />
+
+                <div class="options-container">
+                    <div class="option-card" id="camera-option">
+                        <svg class="option-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z" />
+                            <path
+                                d="M9 3L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1 0 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2h-3.17L15 3H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"
+                            />
+                        </svg>
+                        <span class="option-label">Capture Image</span>
+                    </div>
+
+                    <div class="option-card" id="upload-option">
+                        <svg class="option-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                        </svg>
+                        <span class="option-label">Upload Photo</span>
+                    </div>
+
+                    <div class="option-card" id="video-option">
+                        <svg class="option-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"
+                            />
+                        </svg>
+                        <span class="option-label">Video Scanning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-right">
+            <div class="content-right-container">
+                <img
+                    src="{{ url_for('static', filename='image0.png') }}"
+                    alt="Emotion recognition demonstration"
+                    class="main-image"
+                />
+
+                <div class="about-cloud">
+                    <div class="about-title">About FeelCam</div>
+                    <div class="about-text">
+                        FeelCam is a cutting-edge emotion recognition platform that uses
+                        advanced AI algorithms to detect and analyze facial expressions in
+                        real-time. Our technology can identify 7 different emotional
+                        states with good accuracy, making it perfect for market research,
+                        UX testing, security applications, and mental health monitoring.
+                        FeelCam works across all demographics and can process images and
+                        video in less than half a second, providing instant insights into
+                        emotional responses.
+                    </div>
+                </div>
+
+                <div class="tech-specs">
+                    <div class="tech-spec">
+                        <div class="tech-spec-value"><0.5s</div>
+                        <div class="tech-spec-label">PROCESSING</div>
+                    </div>
+                    <div class="tech-spec">
+                        <div class="tech-spec-value">7</div>
+                        <div class="tech-spec-label">EMOTIONS</div>
+                    </div>
+                    <div class="tech-spec">
+                        <div class="tech-spec-value">4K</div>
+                        <div class="tech-spec-label">RESOLUTION</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const humanIcon = document.querySelector(".human-icon");
+        const humanList = document.querySelector(".human-list");
+        const cameraOption = document.getElementById("camera-option");
+        const uploadOption = document.getElementById("upload-option");
+        const videoOption = document.getElementById("video-option");
+
+        humanIcon.addEventListener("click", (e) => {
+            e.stopPropagation();
+            humanList.classList.toggle("show");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!humanIcon.contains(e.target) && !humanList.contains(e.target)) {
+                humanList.classList.remove("show");
+            }
+        });
+
+        cameraOption.addEventListener("click", () => {
+            window.location.href = "{{ url_for('camera') }}";
+        });
+
+        uploadOption.addEventListener("click", () => {
+            window.location.href = "{{ url_for('upload') }}";
+        });
+
+        videoOption.addEventListener("click", () => {
+            window.location.href = "{{ url_for('videoscan') }}";
+        });
+    </script>
+</body>
+</html>

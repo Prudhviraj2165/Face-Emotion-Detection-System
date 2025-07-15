@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Emotion Recognition</title>
+    <style>
+        /* Your existing styles remain unchanged */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url("/static/image1.jpeg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .privacy-container {
+            background-color: #006158;
+            width: 80%;
+            max-width: 600px;
+            padding: 40px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            color: white;
+            position: relative;
+            margin: 20px;
+        }
+
+        .fingerprint-icon {
+            color: white;
+            font-size: 40px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 0 10px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .privacy-container {
+                width: 90%;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="privacy-container">
+        <div class="fingerprint-icon">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M8 12.5C8 10.6 9.6 9 11.5 9 13.4 9 15 10.6 15 12.5"></path>
+                <path d="M11.5 18V18.01"></path>
+                <path d="M11.5 15.01C9.6 15.01 8 13.4 8 11.5 8 9.6 9.6 8 11.5 8"></path>
+                <path d="M15 11.5C15 13.4 13.4 15 11.5 15"></path>
+                <path d="M12 21C16.971 21 21 16.971 21 12 21 7.029 16.971 3 12 3 7.029 3 3 7.029 3 12 3 16.971 7.029 21 12 21"></path>
+                <path d="M12 18C15.314 18 18 15.314 18 12 18 8.686 15.314 6 12 6 8.686 6 6 8.686 6 12 6 15.314 8.686 18 12 18"></path>
+            </svg>
+        </div>
+        <h1>Privacy Policy</h1>
+        <h2>1. Information We Collect</h2>
+        <p>
+            The Emotion Recognition app collects personal information such as your name, email address, and uploaded images to provide emotion analysis services.
+        </p>
+        <h2>2. How We Use Your Information</h2>
+        <p>
+            Your data is used to analyze facial expressions, improve our machine learning models, and maintain your account. We do not share your personal information with third parties except as required by law.
+        </p>
+        <h2>3. Data Security</h2>
+        <p>
+            We implement reasonable security measures to protect your data. However, no system is completely secure, and you use the service at your own risk.
+        </p>
+        <h2>4. Data Retention</h2>
+        <p>
+            We retain your data for as long as your account is active or as needed to provide services. You may request deletion of your account via the <a href="{{ url_for('contact') }}">Contact</a> page.
+        </p>
+        <h2>5. Cookies</h2>
+        <p>
+            We use cookies to enhance your experience, such as maintaining your session. You can disable cookies in your browser, but this may affect functionality.
+        </p>
+        <h2>6. Contact</h2>
+        <p>
+            For questions about this Privacy Policy, please reach out via the <a href="{{ url_for('contact') }}">Contact</a> page.
+        </p>
+        <div class="back-link">
+            <a href="{{ url_for('register') }}">Back to Registration</a>
+            <a href="{{ url_for('login') }}">Back to Login</a>
+        </div>
+    </div>
+</body>
+</html>

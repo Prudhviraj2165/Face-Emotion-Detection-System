@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Emotion Analysis</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+      :root {
+        --dark-navy: #1a2c4e;
+        --navy: #233659;
+        --light-navy: #2d4373;
+        --cement: #d6d6d6;
+        --cement-light: #e8e8e8;
+        --cement-dark: #c2c2c2;
+        --accent: #5a9fad;
+        --text-light: #e4e6eb;
+        --text-dark: #2e3a54;
+        --success: #4ade80;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(
+          145deg,
+          var(--cement) 0%,
+          var(--cement-light) 100%
+        );
+        color: var(--text-dark);
+        font-family: "Poppins", sans-serif;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
+      .page-container {
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        width: 100%;
+      }
+
+      h1 {
+        font-weight: 700;
+        font-size: 2.8rem;
+        color: var(--dark-navy);
+        margin-bottom: 10px;
+        position: relative;
+        display: inline-block;
+      }
+
+      h1::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--navy), var(--accent));
+        border-radius: 2px;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        color: var(--text-dark);
+        max-width: 600px;
+        margin: 0 auto;
+        margin-top: 20px;
+        opacity: 0.8;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 1000px;
+        background: var(--dark-navy);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .video-container {
+        width: 100%;
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        margin-bottom: 30px;
+        border: 3px solid rgba(90, 159, 173, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .video-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      }
+
+      #videoElement {
+        width: 100%;
+        display: block;
+        border-radius: 14px;
+      }
+
+      #processedImage {
+        display: none;
+        width: 100%;
+        border-radius: 14px;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 10px;
+        width: 100%;
+      }
+
+      .btn {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 14px 32px;
+        border-radius: 14px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 180px;
+      }
+
+      .btn:hover {
+        background: #6baeba;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        background: #7e8895;
+        transform: none;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-light);
+        border: 2px solid var(--text-light);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(228, 230, 235, 0.1);
+        color: white;
+      }
+
+      .status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(26, 44, 78, 0.85);
+        color: var(--text-light);
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 10;
+      }
+
+      .status-badge::before {
+        content: "";
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: var(--success);
+        border-radius: 50%;
+        margin-right: 10px;
+        box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+        }
+      }
+
+      .session-info {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        width: 100%;
+        max-width: 640px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        color: var(--text-light);
+      }
+
+      .emotion-stats {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .emotion-pill {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        transition: transform 0.2s ease;
+        color: var(--text-light);
+      }
+
+      .emotion-pill:hover {
+        transform: scale(1.05);
+      }
+
+      .timer {
+        font-size: 18px;
+        margin-top: 10px;
+        font-weight: bold;
+        color: var(--text-light);
+      }
+
+      .instructions {
+        margin-top: 20px;
+        text-align: center;
+        font-style: italic;
+        opacity: 0.8;
+        color: var(--text-light);
+      }
+
+      .error-message {
+        display: none;
+        margin: 15px 0;
+        padding: 10px;
+        background: rgba(231, 76, 60, 0.2);
+        color: #fff;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      footer {
+        margin-top: 40px;
+        text-align: center;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px;
+          border-radius: 20px;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        .subtitle {
+          font-size: 1rem;
+        }
+
+        .btn {
+          padding: 12px 24px;
+          font-size: 1rem;
+          min-width: 160px;
+        }
+
+        .status-badge {
+          padding: 8px 16px;
+          font-size: 0.85rem;
+        }
+
+        .session-info {
+          padding: 10px 15px;
+        }
+      }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+      <div class="header">
+        <h1>Real-Time Emotion Analysis</h1>
+        <p class="subtitle">
+          Advanced facial recognition system that detects and analyzes emotions
+          in real-time
+        </p>
+      </div>
+
+      <div class="container">
+        <div class="video-container">
+          <video id="videoElement" autoplay></video>
+          <img id="processedImage" alt="Processed frame" />
+          <div class="status-badge" id="currentEmotion">Starting analysis...</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="session-info">
+          <p>Session in progress. We're analyzing your facial expressions in real-time.</p>
+          <div class="timer" id="sessionTimer">00:00</div>
+
+          <div class="emotion-stats" id="emotionStats">
+            <!-- Emotion pills will be added here by JavaScript -->
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="startButton" class="btn">Start Camera</button>
+          <button id="stopButton" class="btn" disabled>Stop Camera</button>
+          <a href="{{ url_for('end_session') }}" class="btn" id="endSessionBtn">End Session</a>
+          <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+
+        <p class="instructions">Look at the camera naturally. Try to maintain good lighting on your face.</p>
+      </div>
+
+      <footer>
+        <p>© 2025 Emotion Analysis System | Privacy Secured</p>
+      </footer>
+    </div>
+
+    <script>
+      // DOM Elements
+      const video = document.getElementById('videoElement');
+      const processedImage = document.getElementById('processedImage');
+      const startButton = document.getElementById('startButton');
+      const stopButton = document.getElementById('stopButton');
+      const endSessionBtn = document.getElementById('endSessionBtn');
+      const emotionDisplay = document.getElementById('currentEmotion');
+      const emotionStats = document.getElementById('emotionStats');
+      const timerElement = document.getElementById('sessionTimer');
+      const errorMessage = document.getElementById('errorMessage');
+
+      // Global variables
+      let stream = null;
+      let isCapturing = false;
+      let captureInterval = null;
+      let emotionsData = {};
+      const FPS = 10; // Increased to capture brief emotions
+      
+      // Session timer
+      let seconds = 0;
+      let minutes = 0;
+      let timerInterval = null;
+
+      // Start the webcam
+      startButton.addEventListener('click', async () => {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              width: { ideal: 640 },
+              height: { ideal: 480 }
+            }
+          });
+          
+          video.srcObject = stream;
+          isCapturing = true;
+          startButton.disabled = true;
+          stopButton.disabled = false;
+          video.style.display = 'block';
+          processedImage.style.display = 'none';
+          errorMessage.style.display = 'none';
+          
+          // Start capturing frames
+          captureInterval = setInterval(captureFrame, 1000 / FPS);
+          
+          // Start the timer
+          startTimer();
+        } catch (error) {
+          console.error('Error accessing webcam:', error);
+          errorMessage.textContent = 'Could not access the webcam. Please make sure it is connected and you have granted permission.';
+          errorMessage.style.display = 'block';
+        }
+      });
+
+      // Stop the webcam
+      stopButton.addEventListener('click', () => {
+        stopCapturing();
+      });
+
+      function stopCapturing() {
+        if (stream) {
+          const tracks = stream.getTracks();
+          tracks.forEach(track => track.stop());
+          video.srcObject = null;
+          stream = null;
+        }
+        
+        isCapturing = false;
+        clearInterval(captureInterval);
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        
+        // Pause the timer
+        clearInterval(timerInterval);
+      }
+
+      // Start the timer
+      function startTimer() {
+        // Reset timer
+        seconds = 0;
+        minutes = 0;
+        timerElement.textContent = '00:00';
+        
+        // Start timer interval
+        timerInterval = setInterval(() => {
+          seconds++;
+          if (seconds >= 60) {
+            seconds = 0;
+            minutes++;
+          }
+
+          const formattedMinutes = String(minutes).padStart(2, '0');
+          const formattedSeconds = String(seconds).padStart(2, '0');
+          timerElement.textContent = `${formattedMinutes}:${formattedSeconds}`;
+        }, 1000);
+      }
+
+      // Capture a frame from the video and send to server
+      function captureFrame() {
+        if (!isCapturing) return;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64 for sending to server
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        
+        // Extract the base64 data
+        const base64Data = imageDataUrl.split(',')[1];
+        
+        // Send to server
+        fetch('/process_frame', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ image: imageDataUrl })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update the processed image
+            processedImage.src = data.processed_image;
+            processedImage.style.display = 'block';
+            video.style.display = 'none';
+            
+            // Update emotion display
+            emotionDisplay.textContent = `Current: ${data.emotion}`;
+            
+            // Store emotion data
+            emotionsData = data.scores;
+            
+            // Update emotion pills with all emotions
+            updateEmotionStats(data.emotion, data.scores);
+          } else if (data.error) {
+            console.error('Error processing frame:', data.error);
+            errorMessage.textContent = data.error;
+            errorMessage.style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Error sending frame to server:', error);
+          errorMessage.textContent = 'Error communicating with server. Please try again.';
+          errorMessage.style.display = 'block';
+        });
+      }
+      
+      // Update emotion statistics display
+      function updateEmotionStats(dominantEmotion, scores) {
+        emotionStats.innerHTML = '';
+        
+        // Display all emotions with non-zero scores
+        Object.entries(scores).forEach(([emotion, value]) => {
+          if (value > 0) { // Show all non-zero emotions
+            const pill = document.createElement('div');
+            pill.className = 'emotion-pill';
+            pill.textContent = `${emotion}: ${(value * 100).toFixed(1)}%`;
+            emotionStats.appendChild(pill);
+          }
+        });
+      }
+
+      // Clean up resources when page unloads
+      window.addEventListener('beforeunload', () => {
+        stopCapturing();
+      });
+      
+      // Start camera automatically on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        startButton.click();
+      });
+    </script>
+</body>
+</html>

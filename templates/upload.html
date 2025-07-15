@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Photo - Emotion Recognition</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #d2d2d0; /* Light cement color */
+        position: relative;
+      }
+
+      .page-container {
+        width: 90%; /* Reduced from 95% to 90% */
+        max-width: 550px; /* Adjusted from 600px */
+        background: #00685e; /* Salmon pink color */
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 8px solid #00685e; /* Added thicker salmon pink border */
+        position: relative;
+        z-index: 1;
+      }
+
+      .upload-container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      h1 {
+        text-align: center;
+        color: #000000; /* Dark green color for UPLOAD */
+        font-size: 22px;
+        margin-top: 0;
+        margin-bottom: 30px;
+        font-weight: 600;
+      }
+
+      .upload-area {
+        border: 2px dashed #e0e0e0;
+        border-radius: 10px;
+        padding: 30px 15px; /* Reduced padding to make width smaller */
+        margin: 20px auto;
+        transition: all 0.3s ease;
+        background: #f9f9f9;
+        position: relative;
+        text-align: center;
+        width: 80%; /* Reduced width of the upload box */
+      }
+
+      .upload-area.drag-over {
+        background: #f0f0f0;
+      }
+
+      .upload-icon {
+        width: 60px;
+        height: 60px;
+        color: #000000; /* Dark green color for icon */
+        margin-bottom: 15px;
+        display: none; /* Hide the original icon */
+      }
+
+      .illustration-image {
+        max-width: 280px; /* Increased from 200px to make image bigger */
+        width: 90%; /* Set percentage width for responsiveness */
+        margin: 0 auto 15px;
+        display: block;
+      }
+
+      .upload-text {
+        margin-bottom: 20px;
+        color: #000000; /* Dark green color for text */
+      }
+
+      .file-input-label {
+        background: #00685e;
+        padding: 12px 25px;
+        border-radius: 30px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin-bottom: 10px;
+      }
+
+      .file-input-label:hover {
+        background: #00685e;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      .file-name {
+        margin-top: 15px;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .preview-container {
+        margin-top: 20px;
+        display: none;
+      }
+
+      .preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+      }
+
+      .analyze-btn {
+        background: #00685e;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 30px;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+        width: 100%;
+      }
+
+      .analyze-btn:hover {
+        background: #00685e;
+      }
+
+      .analyze-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .back-btn {
+        margin-top: 20px;
+        color: #000000; /* Dark green color */
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .back-btn:hover {
+        transform: translateX(-5px);
+      }
+
+      .back-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        color: #000000; /* Dark green color */
+      }
+
+      @media (max-width: 600px) {
+        .page-container {
+          width: 95%;
+          padding: 20px;
+        }
+
+        .upload-container {
+          padding: 20px;
+        }
+
+        .upload-area {
+          padding: 25px 15px;
+          width: 90%;
+        }
+
+        .illustration-image {
+          max-width: 250px;
+        }
+      }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+      <div class="upload-container">
+        <h1>UPLOAD</h1>
+
+        <form
+          id="upload-form"
+          enctype="multipart/form-data"
+          action="{{ url_for('process_upload') }}"
+          method="post"
+        >
+          <div id="upload-area" class="upload-area">
+            <!-- Original SVG icon (hidden via CSS) -->
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+              />
+            </svg>
+
+            <!-- Illustration image from new version -->
+            <img
+              src="/static/image2.jpeg"
+              alt="Upload Photo Illustration"
+              class="illustration-image"
+            />
+
+            <div class="upload-text">
+              <p>Drag and drop your image here</p>
+              <p>or</p>
+            </div>
+            <label for="file-input" class="file-input-label">Browse Files</label>
+            <input
+              type="file"
+              id="file-input"
+              name="image"
+              class="file-input"
+              accept="image/*"
+            />
+            <div id="file-name" class="file-name"></div>
+          </div>
+
+          <div id="preview-container" class="preview-container">
+            <img id="preview-image" class="preview-image" alt="Preview" />
+          </div>
+
+          <button type="submit" id="analyze-btn" class="analyze-btn" disabled>
+            Analyze Emotions
+          </button>
+        </form>
+
+        <a href="{{ url_for('index') }}" class="back-btn">
+          <svg class="back-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+            />
+          </svg>
+          Back to Home
+        </a>
+      </div>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById("file-input");
+      const fileName = document.getElementById("file-name");
+      const previewContainer = document.getElementById("preview-container");
+      const previewImage = document.getElementById("preview-image");
+      const analyzeBtn = document.getElementById("analyze-btn");
+      const uploadArea = document.getElementById("upload-area");
+      const illustrationImage = document.querySelector(".illustration-image");
+
+      // Drag and drop functionality
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        uploadArea.addEventListener(
+          eventName,
+          () => {
+            uploadArea.classList.add("drag-over");
+          },
+          false
+        );
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        uploadArea.addEventListener(
+          eventName,
+          () => {
+            uploadArea.classList.remove("drag-over");
+          },
+          false
+        );
+      });
+
+      uploadArea.addEventListener(
+        "drop",
+        (e) => {
+          const file = e.dataTransfer.files[0];
+          if (file && file.type.startsWith("image/")) {
+            fileInput.files = e.dataTransfer.files;
+            displayFileInfo(file);
+          }
+        },
+        false
+      );
+
+      // File input change event
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          displayFileInfo(file);
+        }
+      });
+
+      function displayFileInfo(file) {
+        fileName.textContent = file.name;
+
+        // Hide the illustration image once a file is selected
+        illustrationImage.style.display = "none";
+
+        // Show image preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target.result;
+          previewContainer.style.display = "block";
+          analyzeBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+    </script>
+</body>
+</html>

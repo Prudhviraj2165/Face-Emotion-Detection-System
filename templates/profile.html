@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+      :root {
+        --teal-green: #006158;
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --cream-bg: #f8f6f0;
+        --accent-color: #00857a;
+        --text-color: #2a2a2a;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: var(--cream-bg);
+        background-image: linear-gradient(120deg, #f8f6f0, #e8e3d2);
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      .container {
+        max-width: 1000px;
+        width: 90%;
+        margin: 40px auto;
+        padding: 30px;
+        border: none;
+        border-radius: 20px;
+        background-color: var(--card-bg);
+        box-shadow: var(--shadow);
+        position: relative;
+        z-index: 1;
+      }
+
+      h2 {
+        font-weight: 600;
+        margin-top: 0;
+        color: var(--teal-green);
+      }
+
+      .profile-section {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 30px;
+      }
+
+      .profile-card {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 80px;
+        background: linear-gradient(
+          135deg,
+          var(--teal-green),
+          var(--accent-color)
+        );
+        z-index: 0;
+      }
+
+      #profile-picture {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      #username {
+        font-size: 24px;
+        margin: 10px 0;
+        font-weight: 600;
+      }
+
+      .profile-info {
+        margin-top: 25px;
+      }
+
+      .stats-content {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .stat-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .stat-icon {
+        background-color: rgba(0, 97, 88, 0.1);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: var(--teal-green);
+      }
+
+      .stat-details {
+        flex: 1;
+      }
+
+      .stat-title {
+        font-size: 14px;
+        color: #777;
+        margin: 0;
+      }
+
+      .stat-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 5px 0 0;
+      }
+
+      button {
+        background-color: var(--teal-green);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s;
+        box-shadow: 0 3px 10px rgba(0, 97, 88, 0.2);
+      }
+
+      button:hover {
+        background-color: var(--accent-color);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 97, 88, 0.3);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      #edit-form {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 0.4s ease-out;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2000;
+        width: 400px;
+        max-width: 90%;
+        display: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -48%);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%);
+        }
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      label {
+        margin-top: 10px;
+        margin-bottom: 8px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #555;
+      }
+
+      input {
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        font-size: 16px;
+        transition: all 0.3s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--teal-green);
+        box-shadow: 0 0 0 3px rgba(0, 97, 88, 0.1);
+      }
+
+      .form-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 25px;
+      }
+
+      .cancel-btn {
+        background-color: #f0f0f0;
+        color: #555;
+        box-shadow: none;
+      }
+
+      .cancel-btn:hover {
+        background-color: #e0e0e0;
+        color: #333;
+      }
+
+      #overlay {
+        backdrop-filter: blur(3px);
+        transition: all 0.4s ease;
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1500;
+      }
+
+      .human-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(0, 97, 88, 0.15);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: fixed;
+        top: 30px;
+        right: 40px;
+        z-index: 1050;
+      }
+
+      .human-icon:hover {
+        background: rgba(0, 97, 88, 0.25);
+      }
+
+      .human-icon svg {
+        width: 18px;
+        height: 18px;
+        color: var(--teal-green);
+      }
+
+      .human-list {
+        position: absolute;
+        top: 60px;
+        right: 5%;
+        width: 200px;
+        background: #f8f6f0;
+        border-radius: 8px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        overflow: hidden;
+      }
+
+      .human-list.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .human-list ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .human-list li {
+        padding: 12px 15px;
+        transition: background-color 0.2s;
+        cursor: pointer;
+        color: #333;
+      }
+
+      .human-list li:hover {
+        background-color: #e6e2d9;
+      }
+
+      .human-list a {
+        color: #333;
+        text-decoration: none;
+        display: block;
+      }
+
+      .back-home-btn {
+        display: inline-block;
+        background-color: var(--teal-green);
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 32px;
+        box-shadow: 0 3px 10px rgba(0, 97, 88, 0.15);
+        transition: background 0.2s, transform 0.2s;
+      }
+      .back-home-btn:hover {
+        background-color: var(--accent-color);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 768px) {
+        .profile-section {
+          grid-template-columns: 1fr;
+        }
+
+        .container {
+          padding: 20px;
+          margin: 20px auto;
+        }
+
+        #profile-picture {
+          width: 140px;
+          height: 140px;
+        }
+
+        #edit-form {
+          width: 90%;
+        }
+
+        .human-icon {
+          top: 20px;
+          right: 10px;
+        }
+      }
+    </style>
+</head>
+<body onload="fetchProfile()">
+    <div class="container">
+      <div class="profile-section">
+        <div class="profile-card">
+          <img
+            id="profile-picture"
+            src="{{ url_for('static', filename='defaultprofile.jpg') }}"
+            alt="Profile Picture"
+          />
+          <h2 id="username"></h2>
+          <div class="profile-info">
+            <p>Email: <span id="email"></span></p>
+            <button onclick="editProfile()">Edit Profile</button>
+          </div>
+        </div>
+
+        <div class="stats-content">
+          <h2>User Statistics</h2>
+          <div class="stat-item">
+            <div class="stat-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div class="stat-details">
+              <p class="stat-title">Days Active</p>
+              <p class="stat-value" id="days-active">N/A</p>
+            </div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+            <div class="stat-details">
+              <p class="stat-title">Total Activities</p>
+              <p class="stat-value" id="total-activities">N/A</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Back to Home Button -->
+      <div style="text-align:center;">
+        <a href="{{ url_for('index') }}" class="back-home-btn">← Back to Home</a>
+      </div>
+    </div>
+
+    <section id="edit-form">
+      <h2>Edit Profile</h2>
+      <form id="profile-form" onsubmit="updateProfile(event)" enctype="multipart/form-data">
+        <label for="new-username">Username:</label>
+        <input type="text" id="new-username" required />
+
+        <label for="new-email">Email:</label>
+        <input type="email" id="new-email" required />
+
+        <label for="new-password">Password:</label>
+        <input type="password" id="new-password" placeholder="Leave blank to keep current" />
+
+        <label for="profile-pic-upload">Profile Picture:</label>
+        <input type="file" id="profile-pic-upload" accept="image/*" />
+
+        <div class="form-buttons">
+          <button type="submit">Save Changes</button>
+          <button type="button" onclick="cancelEdit()" class="cancel-btn">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </section>
+
+
+    <script>
+      const humanIcon = document.querySelector('.human-icon');
+      const humanList = document.querySelector('.human-list');
+
+      humanIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          humanList.classList.toggle('show');
+      });
+
+      document.addEventListener('click', (e) => {
+          if (!humanIcon.contains(e.target) && !humanList.contains(e.target)) {
+              humanList.classList.remove('show');
+          }
+      });
+
+      function fetchProfile() {
+          fetch('/get_profile')
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error(`HTTP error! status: ${response.status}`);
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  if (data.success) {
+                      document.getElementById('username').innerText = data.username;
+                      document.getElementById('email').innerText = data.email;
+                      document.getElementById('profile-picture').src = data.profile_pic;
+                      document.getElementById('days-active').innerText = data.days_active;
+                      document.getElementById('total-activities').innerText = data.total_activities;
+                  } else {
+                      console.error('Fetch failed:', data.message);
+                  }
+              })
+              .catch(error => {
+                  console.error('Error fetching profile:', error);
+                  window.location.href = '{{ url_for("login") }}';
+              });
+      }
+
+      function editProfile() {
+          document.getElementById('edit-form').style.display = 'block';
+          document.getElementById('overlay').style.display = 'block';
+          document.getElementById('new-username').value = document.getElementById('username').innerText;
+          document.getElementById('new-email').value = document.getElementById('email').innerText;
+          document.getElementById('new-password').value = ''; // Clear password field
+          document.getElementById('profile-pic-upload').value = ''; // Clear file input
+      }
+
+      function cancelEdit() {
+          document.getElementById('edit-form').style.display = 'none';
+          document.getElementById('overlay').style.display = 'none';
+      }
+
+      function updateProfile(event) {
+          event.preventDefault();
+          const formData = new FormData();
+          formData.append('username', document.getElementById('new-username').value);
+          formData.append('email', document.getElementById('new-email').value);
+          const password = document.getElementById('new-password').value;
+          if (password) {
+              formData.append('password', password); // Only append if provided
+          }
+          const fileInput = document.getElementById('profile-pic-upload');
+          if (fileInput.files[0]) {
+              formData.append('profile-pic-upload', fileInput.files[0]);
+          }
+
+          fetch('/update_profile', {
+              method: 'POST',
+              body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Profile updated successfully!');
+                  document.getElementById('username').innerText = data.username;
+                  document.getElementById('email').innerText = data.email;
+                  if (data.profile_pic) {
+                      document.getElementById('profile-picture').src = data.profile_pic + '?t=' + new Date().getTime(); // Add timestamp to force reload
+                  }
+                  document.getElementById('edit-form').style.display = 'none';
+                  document.getElementById('overlay').style.display = 'none';
+                  fetchProfile(); // Refresh full profile data
+              } else {
+                  alert('Failed to update profile: ' + (data.message || 'Unknown error'));
+              }
+          })
+          .catch(error => {
+              console.error('Error updating profile:', error);
+              alert('An error occurred while updating the profile.');
+          });
+      }
+
+      function logout() {
+          fetch('/logout')
+              .then(() => {
+                  alert('Logged out');
+                  window.location.href = '{{ url_for("login") }}';
+              })
+              .catch(error => {
+                  console.error('Logout failed:', error);
+                  window.location.href = '{{ url_for("login") }}';
+              });
+      }
+    </script>
+</body>
+</html>

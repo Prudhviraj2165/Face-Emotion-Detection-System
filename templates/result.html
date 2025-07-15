@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emotion Analysis Results</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+    :root {
+      --teal-dark: #006158;
+      --teal-medium: #00857a;
+      --teal-light: #4ab0a4;
+      --teal-accent: #00c2b2;
+      --cream: #fff6e9;
+      --cream-light: #fffaf2;
+      --cream-dark: #f0e6d6;
+      --text-dark: #1d3b36;
+      --text-light: #fffaf2;
+      --gold-accent: #e6be8a;
+    }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal-medium));
+      color: var(--text-dark);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+    nav {
+      background: rgba(0, 97, 88, 0.85);
+      padding: 15px 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 3px solid var(--teal-accent);
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 0;
+      padding: 0;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--cream-light);
+      font-size: 18px;
+      padding: 8px 20px;
+      border-radius: 25px;
+      transition: all 0.4s ease;
+      font-weight: 500;
+    }
+    nav a:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--gold-accent);
+      transform: translateY(-3px);
+    }
+    .main-content {
+      margin-top: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 850px;
+      padding: 30px;
+    }
+    header { text-align: center; margin-bottom: 40px; }
+    header h1 {
+      font-size: 36px;
+      color: var(--cream-light);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-weight: 600;
+    }
+    .result-container {
+      text-align: center;
+      background: var(--cream-light);
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      margin-top: 20px;
+      width: 100%;
+      max-width: 650px;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .emotion-label {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: var(--teal-dark);
+      display: inline-block;
+    }
+    .emotion-value {
+      color: var(--teal-dark);
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+      display: inline-block;
+      padding: 0 5px;
+    }
+    .chart-container {
+      margin: 30px 0 10px 0;
+      background: rgba(255,255,255,0.7);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      border: 1px solid rgba(240,230,214,0.5);
+    }
+    .custom-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 15px;
+      background: #f9f6e9;
+      border-radius: 8px;
+      padding: 4px 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+      border: 1.5px solid #ddd;
+    }
+    .legend-label {
+      font-weight: 600;
+      margin-right: 2px;
+    }
+    .legend-value {
+      color: #00857a;
+      font-weight: 500;
+      margin-left: 2px;
+    }
+    .legend-percent {
+      color: #888;
+      font-size: 14px;
+      margin-left: 2px;
+    }
+    .description {
+      margin-top: 30px;
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--text-dark);
+      background: rgba(255,255,255,0.5);
+      padding: 20px;
+      border-radius: 12px;
+      border-left: 4px solid var(--teal-accent);
+    }
+    .suggestions {
+      margin-top: 20px;
+      background: rgba(255,255,255,0.5);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      text-align: left;
+      border-left: 4px solid var(--teal-accent);
+    }
+    .suggestions h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      color: var(--teal-dark);
+      font-weight: 600;
+    }
+    .suggestions ul {
+      list-style-type: disc;
+      padding-left: 20px;
+      margin: 0;
+    }
+    .suggestions li {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text-dark);
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 35px;
+    }
+    .btn {
+      padding: 14px 28px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      letter-spacing: 0.5px;
+      border: 1px solid transparent;
+    }
+    
+    /* Upload button - teal gradient */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--teal-dark), var(--teal-medium));
+      color: var(--cream-light);
+      border: 1px solid var(--teal-accent);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--teal-medium), var(--teal-dark));
+      box-shadow: 0 10px 20px rgba(0,97,88,0.25);
+      transform: translateY(-3px);
+    }
+    
+    /* Camera button - blue gradient */
+    .btn-camera {
+      background: linear-gradient(135deg, #2c3e50, #3498db);
+      color: var(--cream-light);
+      border: 1px solid #5dade2;
+    }
+    .btn-camera:hover {
+      background: linear-gradient(135deg, #3498db, #2c3e50);
+      box-shadow: 0 10px 20px rgba(44,62,80,0.25);
+      transform: translateY(-3px);
+    }
+    
+    /* Video button - purple gradient */
+    .btn-video {
+      background: linear-gradient(135deg, #8e44ad, #9b59b6);
+      color: var(--cream-light);
+      border: 1px solid #bb8fce;
+    }
+    .btn-video:hover {
+      background: linear-gradient(135deg, #9b59b6, #8e44ad);
+      box-shadow: 0 10px 20px rgba(142,68,173,0.25);
+      transform: translateY(-3px);
+    }
+    
+    /* Home button - gold/cream gradient */
+    .btn-home {
+      background: linear-gradient(135deg, var(--gold-accent), var(--cream-dark));
+      color: var(--text-dark);
+      border: 1px solid var(--gold-accent);
+    }
+    .btn-home:hover {
+      background: linear-gradient(135deg, var(--cream-dark), var(--gold-accent));
+      box-shadow: 0 10px 20px rgba(230,190,138,0.25);
+      transform: translateY(-3px);
+    }
+  </style>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('history') }}">History</a></li>
+      <li><a href="{{ url_for('contact') }}">Contact</a></li>
+    </ul>
+  </nav>
+  <div class="main-content">
+    <header>
+      <h1>Emotion Analysis Results</h1>
+    </header>
+    <div class="result-container">
+      <div class="emotion-label">
+        Dominant Emotion: <span class="emotion-value">{{ emotion|capitalize }}</span>
+        {% if scores is defined and scores[emotion] is defined %}
+          ({{ scores[emotion]|round(2) }})
+        {% else %}
+          (Score unavailable)
+        {% endif %}
+      </div>
+      <div class="chart-container">
+        <div id="piechart_3d" style="width:100%;max-width:450px;height:350px;margin:0 auto;"></div>
+        <!-- Custom Legend -->
+        <div class="custom-legend" id="custom-legend"></div>
+      </div>
+      <div class="description">
+        <p>
+          Based on our facial expression analysis, your primary emotion during the session was
+          <strong>{{ emotion|capitalize }}</strong>.
+        </p>
+        <p>
+          The chart above shows the distribution of all emotions detected during the session.
+        </p>
+      </div>
+      <div class="suggestions">
+        <h3>Suggestions for {{ emotion|capitalize }}</h3>
+        <ul>
+          {% for suggestion in suggestions %}
+            <li>{{ suggestion|safe }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="action-buttons">
+        <a href="{{ url_for('upload') }}" class="btn btn-primary">Upload Another Photo</a>
+        <a href="{{ url_for('camera') }}" class="btn btn-camera">Try Camera Mode</a>
+        <a href="{{ url_for('videoscan') }}" class="btn btn-video">Video Scan</a>
+        <a href="{{ url_for('index') }}" class="btn btn-home">Back to Home</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    // You can customize these colors to match your chart
+    const chartColors = [
+      "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477"
+    ];
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      // Prepare data for chart and legend
+      var dataArr = [
+        ['Emotion', 'Score'],
+        {% for emotion, score in scores.items() %}
+          ['{{ emotion|capitalize }}', {{ score|float }}],
+        {% endfor %}
+      ];
+      var data = google.visualization.arrayToDataTable(dataArr);
+
+      var options = {
+        is3D: true,
+        backgroundColor: 'transparent',
+        legend: { position: 'none' },
+        sliceVisibilityThreshold: 0,
+        pieSliceText: 'value-and-percentage',
+        pieSliceTextStyle: { fontSize: 14, color: '#fff', fontName: 'Poppins' },
+        tooltip: { text: 'both', textStyle: { fontName: 'Poppins' } },
+        chartArea: { left: 10, top: 20, width: '85%', height: '80%' },
+        colors: chartColors
+      };
+
+      var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+
+      // Pop out effect on hover
+      google.visualization.events.addListener(chart, 'onmouseover', function(e) {
+        if (e.row != null) {
+          var slices = {};
+          slices[e.row] = {offset: 0.15};
+          chart.draw(data, {...options, slices: slices});
+        }
+      });
+      google.visualization.events.addListener(chart, 'onmouseout', function() {
+        chart.draw(data, options);
+      });
+
+      chart.draw(data, options);
+
+      // Custom legend
+      var total = 0;
+      for (var i = 1; i < dataArr.length; i++) {
+        total += dataArr[i][1];
+      }
+      var legendHtml = "";
+      for (var i = 1; i < dataArr.length; i++) {
+        var color = chartColors[(i-1) % chartColors.length];
+        var label = dataArr[i][0];
+        var value = dataArr[i][1];
+        var percent = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+        legendHtml += `
+          <span class="legend-item">
+            <span class="legend-color" style="background:${color}"></span>
+            <span class="legend-label">${label}</span>
+            <span class="legend-value">${value}</span>
+            <span class="legend-percent">(${percent}%)</span>
+          </span>
+        `;
+      }
+      document.getElementById("custom-legend").innerHTML = legendHtml;
+    }
+  </script>
+</body>
+</html>

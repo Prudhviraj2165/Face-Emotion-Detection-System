@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Emotion Recognition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #006158;
+            color: #f9f6e9;
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        .page-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .left-section {
+            flex: 1;
+            padding: 40px;
+            padding-right: 60px;
+        }
+
+        .right-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            gap: 20px;
+        }
+
+        .fingerprint-icon {
+            color: white;
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .mobile-mockup {
+            position: relative;
+            width: 280px;
+            height: 560px;
+            background-color: #0a3b32;
+            border-radius: 30px;
+            border: 3px solid rgba(249, 246, 233, 0.2);
+            padding: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .mobile-mockup.light {
+            background-color: #f9f6e9;
+            border: 3px solid rgba(10, 59, 50, 0.2);
+        }
+
+        .mobile-screen {
+            background-color: #0a3b32;
+            border-radius: 20px;
+            height: 100%;
+            overflow: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-screen.light {
+            background-color: #f9f6e9;
+            color: #0a3b32;
+        }
+
+        .mobile-header {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        .mobile-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(249, 246, 233, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .light .feature-icon {
+            background-color: rgba(10, 59, 50, 0.1);
+        }
+
+        .feature-icon svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .feature-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            opacity: 0.8;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.2rem;
+            color: #f9f6e9;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: #f9f6e9;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            color: #f9f6e9;
+        }
+
+        .section-subtitle {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            color: #f9f6e9;
+            opacity: 0.9;
+        }
+
+        .stats-container {
+            margin: 40px 0;
+            border-top: 1px solid rgba(249, 246, 233, 0.2);
+            padding-top: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-right: 15px;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .description {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .faq-container {
+            max-width: 1000px;
+            margin: 80px auto 40px;
+            padding: 30px;
+            background-color: #f9f6e9;
+            color: #0a3b32;
+            border-radius: 20px;
+        }
+
+        .faq-title {
+            text-align: left;
+            color: #0a3b32;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .faq-subtitle {
+            color: #0a3b32;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .faq-section h2 {
+            color: #0a3b32;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .faq-item {
+            background: rgba(10, 59, 50, 0.05);
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #0a3b32;
+            font-weight: 500;
+        }
+
+        .plus-icon {
+            color: #0a3b32;
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-answer {
+            display: none;
+            margin-top: 15px;
+            color: #0a3b32;
+            line-height: 1.6;
+            padding-top: 15px;
+            border-top: 1px solid rgba(10, 59, 50, 0.1);
+            opacity: 0.8;
+        }
+
+        .faq-item.open {
+            background: rgba(10, 59, 50, 0.1);
+        }
+
+        .faq-item.open .plus-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-item.open .faq-answer {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 0.8; transform: translateY(0); }
+        }
+        .login-button {
+            position: absolute;
+            bottom: 120px;
+            left: 75px;
+            background: rgba(249, 246, 233, 0.2);
+            color: #f9f6e9;
+            border: 2px solid #f9f6e9;
+            border-radius: 8px;
+            padding: 12px 36px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .login-button:hover {
+            background: rgba(249, 246, 233, 0.3);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1024px) {
+            .page-container {
+                flex-direction: column;
+            }
+            .left-section, .right-section {
+                padding: 20px;
+            }
+            .right-section {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2.2rem;
+            }
+            .section-subtitle {
+                font-size: 1.5rem;
+            }
+            .faq-title {
+                font-size: 2rem;
+            }
+            .mobile-mockup {
+                width: 240px;
+                height: 480px;
+            }
+            .login-button {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: 20px auto;
+                display: block;
+                text-align: center;
+                width: fit-content;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="fingerprint-icon">
+        <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="25" stroke="white" stroke-width="3" fill="none" />
+        <circle cx="30" cy="30" r="17" stroke="white" stroke-width="3" fill="none" />
+        <circle cx="30" cy="30" r="9" stroke="white" stroke-width="3" fill="none" />
+        </svg>
+    </div>
+
+    <a href="{{ url_for('login') }}" class="login-button">Login</a>
+
+    <div class="page-container">
+        <div class="left-section">
+            <h1 class="section-title">FEEL CAM<br>Emotion<br>Recognition</h1>
+            <p class="description">
+                Learn more about our advanced emotion recognition technology designed to analyze facial expressions with precision and speed.
+            </p>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                </div>
+                <div class="stat-item">
+                </div>
+            </div>
+        </div>
+
+        <div class="right-section">
+            <div class="mobile-mockup">
+                <div class="mobile-screen">
+                    <div class="mobile-header">FEATURES</div>
+                    <div class="mobile-title">Emotion Analysis</div>
+
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="#F9F6E9" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="9" cy="9" r="1" fill="#F9F6E9"/>
+                            <circle cx="15" cy="9" r="1" fill="#F9F6E9"/>
+                            <circle cx="12" cy="12" r="9" stroke="#F9F6E9" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title">Real-Time Detection</div>
+                    <div class="feature-text">Instantly analyzes facial expressions to detect emotions in real-time.</div>
+
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 4V20M18 6L6 18M20 12H4M18 18L6 6" stroke="#F9F6E9" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title">High Precision</div>
+                    <div class="feature-text">Achieves high accuracy through advanced AI algorithms.</div>
+                </div>
+            </div>
+
+            <div class="mobile-mockup light">
+                <div class="mobile-screen light">
+                    <div class="mobile-header" style="color: #0a3b32;">BENEFITS</div>
+                    <div class="mobile-title" style="color: #0a3b32;">Why Use It</div>
+
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19.5 8.25V16.5c0 1.24-1.01 2.25-2.25 2.25H6.75c-1.24 0-2.25-1.01-2.25-2.25V8.25" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 15.75V9.75" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8.625 12H15.375" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M16.5 5.25H7.5c-.41 0-.75.34-.75.75s.34.75.75.75h9c.41 0 .75-.34.75-.75s-.34-.75-.75-.75Z" fill="#0a3b32"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title" style="color: #0a3b32;">Versatile Use</div>
+                    <div class="feature-text" style="color: #0a3b32;">Applicable in healthcare, UX, and more.</div>
+
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 12V22H4V12" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 7H2V12H22V7Z" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 22V7" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 7H7.5C6.83696 7 6.20107 6.73661 5.73223 6.26777C5.26339 5.79893 5 5.16304 5 4.5C5 3.83696 5.26339 3.20107 5.73223 2.73223C6.20107 2.26339 6.83696 2 7.5 2C11 2 12 7 12 7Z" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 7H16.5C17.163 7 17.7989 6.73661 18.2678 6.26777C18.7366 5.79893 19 5.16304 19 4.5C19 3.83696 18.7366 3.20107 18.2678 2.73223C17.7989 2.26339 17.163 2 16.5 2C13 2 12 7 12 7Z" stroke="#0a3b32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="feature-title" style="color: #0a3b32;">Fast Insights</div>
+                    <div class="feature-text" style="color: #0a3b32;">Delivers quick emotional feedback.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FAQ item toggle functionality
+        function toggleAnswer(item) {
+            item.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>

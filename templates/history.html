@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #0a3b32;
+            color: #f9f6e9;
+            position: relative;
+            padding: 80px 20px 40px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.pinimg.com/736x/70/34/a9/7034a90a482c8770464e6bdb11e6aebd.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        nav {
+            background: #006158;
+            padding: 15px 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #f9f6e9;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+        }
+        .logo::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: #f9f6e9;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            margin-left: 30px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #f9f6e9;
+            font-size: 18px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: #f8e7eb;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .human-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .human-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .human-icon svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+        .human-list {
+            position: absolute;
+            top: 60px;
+            right: 5%;
+            width: 200px;
+            background: #f9f6e9;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .human-list.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .human-list ul {
+            list-style: none;
+        }
+        .human-list li {
+            padding: 12px 15px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            color: #333;
+        }
+        .human-list li:hover {
+            background-color: #e6e2d9;
+        }
+        .human-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        .main-content {
+            max-width: 900px;
+            margin: 120px auto 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        .description {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        .history-container {
+            background: #f9f6e9;
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 20px;
+            box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(249, 246, 233, 0.1);
+            color: #000000;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            color: #000000;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 30px;
+            background: rgba(249, 246, 233, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(249, 246, 233, 0.1);
+        }
+        thead {
+            background-color: rgba(109, 32, 128, 0.8);
+        }
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #f9f6e9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        td {
+            padding: 14px 20px;
+            border-top: 1px solid rgba(249, 246, 233, 0.1);
+            color: rgba(0, 0, 0, 0.85);
+        }
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+        tbody tr:hover {
+            background-color: rgba(255, 191, 0, 0.08);
+            transform: translateX(5px);
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .emotion-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            text-transform: capitalize;
+        }
+        .happy { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .sad { background: linear-gradient(135deg, #17a2b8, #0dcaf0); color: white; }
+        .angry { background: linear-gradient(135deg, #dc3545, #ff4d5e); color: white; }
+        .fear { background: linear-gradient(135deg, #ffc107, #ffca2c); color: black; }
+        .surprise { background: linear-gradient(135deg, #007bff, #0d6efd); color: white; }
+        .disgust { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+        .neutral { background: linear-gradient(135deg, #f8f9fa, #dee2e6); color: black; }
+
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: 500;
+            width: 100%;
+        }
+        .alert-success {
+            background: rgba(40, 167, 69, 0.2);
+            border-left: 4px solid #28a745;
+        }
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.2);
+            border-left: 4px solid #dc3545;
+        }
+        .alert-info {
+            background: rgba(23, 162, 184, 0.2);
+            border-left: 4px solid #17a2b8;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 20px;
+            }
+            .section-title {
+                font-size: 2.5rem;
+            }
+            .history-container {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .history-container {
+                padding: 20px;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+            nav ul {
+                gap: 15px;
+            }
+            nav a {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 10px;
+            }
+            nav ul {
+                gap: 10px;
+            }
+            nav a {
+                font-size: 14px;
+            }
+            .history-container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-left">
+            <div class="logo">FeelCam</div>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('history') }}">History</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <div class="human-icon">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                >
+                    <path
+                        d="M12 2c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 14c-3.31 0-6 2.69-6 6h12c0-3.31-2.69-6-6-6z"
+                    />
+                </svg>
+            </div>
+        </div>
+    </nav>
+    <div class="human-list">
+        <ul>
+            <li><a href="{{ url_for('show_profile') }}">Profile</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h1 class="section-title">Session & Emotion History</h1>
+        <p class="description">Review your session history and recent emotion records detected by FeelCam.</p>
+
+        <div class="history-container">
+            <h2>Session History</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Login Time</th>
+                        <th>Logout Time</th>
+                        <th>Predominant Emotion</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if sessions_with_emotions %}
+                        {% for session_data in sessions_with_emotions %}
+                            <tr>
+                                <td>{{ session_data.session.login_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    {% if session_data.session.logout_time %}
+                                        {{ session_data.session.logout_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {% else %}
+                                        Active Session
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="emotion-badge {{ session_data.predominant_emotion }}">
+                                        {{ session_data.predominant_emotion }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if session_data.session.logout_time %}
+                                        {{ (session_data.session.logout_time - session_data.session.login_time).total_seconds() // 60 }} minutes
+                                    {% else %}
+                                        In progress
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">No session history found.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+
+            <h2 style="margin-top: 40px;">Recent Emotion Records</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Emotion</th>
+                        <th>Confidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if emotion_records %}
+                        {% for record in emotion_records[:10] %}
+                            <tr>
+                                <td>{{ record.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>
+                                    <span class="emotion-badge {{ record.emotion }}">
+                                        {{ record.emotion }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.2f"|format(record.confidence * 100) }}%</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3">No emotion records found.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        const humanIcon = document.querySelector(".human-icon");
+        const humanList = document.querySelector(".human-list");
+        humanIcon.addEventListener("click", (e) => {
+            e.stopPropagation();
+            humanList.classList.toggle("show");
+        });
+        document.addEventListener("click", (e) => {
+            if (!humanIcon.contains(e.target) && !humanList.contains(e.target)) {
+                humanList.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>

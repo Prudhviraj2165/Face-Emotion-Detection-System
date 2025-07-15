@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Emotion Recognition</title>
+    <style>
+        /* Your existing styles remain unchanged */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url("/static/image1.jpeg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .terms-container {
+            background-color: #006158;
+            width: 80%;
+            max-width: 600px;
+            padding: 40px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            color: white;
+            position: relative;
+            margin: 20px;
+        }
+
+        .fingerprint-icon {
+            color: white;
+            font-size: 40px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 0 10px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .terms-container {
+                width: 90%;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terms-container">
+        <div class="fingerprint-icon">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M8 12.5C8 10.6 9.6 9 11.5 9 13.4 9 15 10.6 15 12.5"></path>
+                <path d="M11.5 18V18.01"></path>
+                <path d="M11.5 15.01C9.6 15.01 8 13.4 8 11.5 8 9.6 9.6 8 11.5 8"></path>
+                <path d="M15 11.5C15 13.4 13.4 15 11.5 15"></path>
+                <path d="M12 21C16.971 21 21 16.971 21 12 21 7.029 16.971 3 12 3 7.029 3 3 7.029 3 12 3 16.971 7.029 21 12 21"></path>
+                <path d="M12 18C15.314 18 18 15.314 18 12 18 8.686 15.314 6 12 6 8.686 6 6 8.686 6 12 6 15.314 8.686 18 12 18"></path>
+            </svg>
+        </div>
+        <h1>Terms of Service</h1>
+        <h2>1. Acceptance of Terms</h2>
+        <p>
+            By accessing or using the Emotion Recognition application, you agree to be bound by these Terms of Service. If you do not agree, please do not use the service.
+        </p>
+        <h2>2. Use of Service</h2>
+        <p>
+            You may use the Emotion Recognition app to analyze facial expressions for personal purposes. You agree not to misuse the service, including uploading inappropriate content or attempting to harm the system.
+        </p>
+        <h2>3. User Data</h2>
+        <p>
+            We collect and process user data, including images and analysis results, as outlined in our <a href="{{ url_for('privacy') }}">Privacy Policy</a>. You are responsible for ensuring any uploaded content complies with applicable laws.
+        </p>
+        <h2>4. Account Responsibility</h2>
+        <p>
+            You are responsible for maintaining the confidentiality of your account credentials. Notify us immediately of any unauthorized access.
+        </p>
+        <h2>5. Termination</h2>
+        <p>
+            We reserve the right to suspend or terminate your account for violations of these terms or for any other reason at our discretion.
+        </p>
+        <h2>6. Contact</h2>
+        <p>
+            For questions about these Terms, please contact us via the <a href="{{ url_for('contact') }}">Contact</a> page.
+        </p>
+        <div class="back-link">
+            <a href="{{ url_for('register') }}">Back to Registration</a>
+            <a href="{{ url_for('login') }}">Back to Login</a>
+        </div>
+    </div>
+</body>
+</html>

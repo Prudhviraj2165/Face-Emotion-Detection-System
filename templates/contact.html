@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: #0a3b32;
+            color: #f9f6e9;
+            position: relative;
+            padding: 80px 20px 40px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.pinimg.com/736x/70/34/a9/7034a90a482c8770464e6bdb11e6aebd.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- Top Slide/Announcement/Nav Styling (from index.html) --- */
+        .announcement-bar {
+            background-color: #f8e7eb;
+            color: #333;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: 500;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1100;
+        }
+        .announcement-bar a {
+            color: #333;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        nav {
+            background: #006158;
+            padding: 15px 5%;
+            position: fixed;
+            width: 100%;
+            top: 32px;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #f9f6e9;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+        }
+        .logo::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: #f9f6e9;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            margin-left: 30px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #f9f6e9;
+            font-size: 18px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: #f8e7eb;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .human-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .human-icon:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .human-icon svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+        .human-list {
+            position: absolute;
+            top: 76px;
+            right: 5%;
+            width: 200px;
+            background: #f9f6e9;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .human-list.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .human-list ul {
+            list-style: none;
+        }
+        .human-list li {
+            padding: 12px 15px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            color: #333;
+        }
+        .human-list li:hover {
+            background-color: #e6e2d9;
+        }
+        .human-list a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Flash Messages Styling */
+        .flash-container {
+            position: fixed;
+            top: 95px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            z-index: 1001;
+        }
+
+        .flash-message {
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideDown 0.3s ease-out forwards;
+            color: #333;
+        }
+
+        .flash-message.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .flash-message.danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .flash-message.warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+
+        .flash-message.info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* --- Contact Page Styling (unchanged) --- */
+        .main-content {
+            max-width: 900px;
+            margin: 120px auto 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-container {
+            background: #f9f6e9;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(249, 246, 233, 0.1);
+            color: #000000;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        .description {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            color: #000000;
+        }
+
+        .input-group {
+            width: 100%;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            opacity: 0.9;
+            color: #000000;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(10, 59, 50, 0.2);
+            border-radius: 10px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.7);
+            color: #000000;
+            font-size: 1rem;
+        }
+
+        .input-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .input-group input::placeholder, .input-group textarea::placeholder {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .contact-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background-color: #0a3b32;
+            color: #f9f6e9;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .contact-btn:hover {
+            background-color: #0d4d41;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 20px;
+            }
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .contact-container {
+                padding: 30px;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+            nav ul {
+                gap: 15px;
+            }
+            nav a {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 10px;
+            }
+            nav ul {
+                gap: 10px;
+            }
+            nav a {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="announcement-bar">
+        <!-- Announcement or info can go here (optional) -->
+    </div>
+    <nav>
+        <div class="nav-left">
+            <div class="logo">FeelCam</div>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('history') }}">History</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <div class="human-icon">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                >
+                    <path
+                        d="M12 2c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 14c-3.31 0-6 2.69-6 6h12c0-3.31-2.69-6-6-6z"
+                    />
+                </svg>
+            </div>
+        </div>
+    </nav>
+    <div class="human-list">
+        <ul>
+            <li><a href="{{ url_for('show_profile') }}">Profile</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                        <span class="close-btn">&times;</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="main-content">
+        <h1 class="section-title">Contact Us</h1>
+        <p class="description">Reach out to us with any questions or feedback about our emotion recognition platform.</p>
+        <div class="contact-container">
+            <h2>Send us a message</h2>
+            <form action="{{ url_for('contact') }}" method="POST">
+                <div class="input-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="Your Name" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" placeholder="Your Message" required></textarea>
+                </div>
+                <button type="submit" class="contact-btn">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const humanIcon = document.querySelector(".human-icon");
+        const humanList = document.querySelector(".human-list");
+        humanIcon.addEventListener("click", (e) => {
+            e.stopPropagation();
+            humanList.classList.toggle("show");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!humanIcon.contains(e.target) && !humanList.contains(e.target)) {
+                humanList.classList.remove("show");
+            }
+        });
+
+        // Flash message handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeButtons = document.querySelectorAll('.close-btn');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+            
+            // Auto-hide flash messages after 5 seconds
+            setTimeout(function() {
+                const flashMessages = document.querySelectorAll('.flash-message');
+                flashMessages.forEach(message => {
+                    message.style.opacity = '0';
+                    message.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => {
+                        message.style.display = 'none';
+                    }, 500);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
