@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FeelCam{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {% if category == 'success' %}<i class="fas fa-check-circle"></i>{% endif %}
+                    {% if category == 'danger' or category == 'warning' %}<i class="fas fa-exclamation-circle"></i>{% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+            <script>
+                setTimeout(() => {
+                    const messages = document.querySelectorAll('.alert');
+                    messages.forEach(msg => {
+                        msg.style.opacity = '0';
+                        msg.style.transform = 'translateY(-20px)';
+                        msg.style.transition = 'all 0.5s ease';
+                        setTimeout(() => msg.remove(), 500);
+                    });
+                }, 4000);
+            </script>
+        {% endif %}
+    {% endwith %}
+
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">
+            <i class="fas fa-eye"></i> FeelCam
+        </a>
+        
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+            {% if session.get('user_id') %}
+                <li><a href="{{ url_for('history') }}" class="{% if request.endpoint == 'history' %}active{% endif %}">History</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('contact') }}" class="{% if request.endpoint == 'contact' %}active{% endif %}">Contact</a></li>
+        </ul>
+
+        <div class="nav-right">
+            {% if session.get('user_id') %}
+            <div class="user-menu" id="user-menu">
+                <div class="avatar" title="{{ session.get('username') }}">
+                    {{ session.get('username')[0]|upper if session.get('username') else 'U' }}
+                </div>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('show_profile') }}"><i class="fas fa-user mb-1"></i> Profile</a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt mb-1"></i> Logout</a>
+                </div>
+            </div>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-accent btn-sm">Sign In</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // User menu toggle
+        const userMenu = document.getElementById('user-menu');
+        if (userMenu) {
+            userMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!userMenu.contains(e.target)) {
+                    userMenu.classList.remove('active');
+                }
+            });
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

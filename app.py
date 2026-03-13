@@ -17,6 +17,9 @@ import logging
 import re
 from dotenv import load_dotenv
 import mediapipe as mp
+# MediaPipe legacy solutions are failing in this environment. 
+# We'll use OpenCV for face detection as it's more robust.
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 load_dotenv()
 print("DB_URI:", os.getenv("DB_URI"))
@@ -65,96 +68,214 @@ class EmotionAnalysis(db.Model):
     confidence = db.Column(db.Float, nullable=False)
     user = db.relationship('User', backref=db.backref('emotions', lazy=True))
 
-# Load the model
-try:
-    model = load_model("emotion_model.keras")
-    print("Model loaded successfully.")
-    print(model.summary())
-except Exception as e:
-    print(f"Error loading model: {e}")
-    model = None
+# Emotion labels — must match training order (FER-2013 order)
+EMOTION_LABELS = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
+
+# Minimum confidence threshold — predictions below this are flagged as "uncertain"
+CONFIDENCE_THRESHOLD = 0.25
+
+# Model input size — FER-2013 standard
+MODEL_INPUT_SIZE = (48, 48)
+
+# Load the model dynamically — supports both .keras and .h5 formats
+model = None
+for model_path in ["emotion_model.keras", "emotion_model.h5"]:
+    if os.path.exists(model_path):
+        try:
+            model = load_model(model_path)
+            print(f"[ML] Model loaded from '{model_path}'.")
+            print(f"[ML] Input shape expected: {model.input_shape}")
+            # Warm up the model to pre-compile its graph (speeds up first real inference)
+            dummy = np.zeros((1, *MODEL_INPUT_SIZE, 1), dtype=np.float32)
+            model.predict(dummy, verbose=0)
+            print("[ML] Model warm-up complete.")
+        except Exception as e:
+            print(f"[ML] Error loading model from '{model_path}': {e}")
+            model = None
+        break
+if model is None:
+    print("[ML] WARNING: No model file found (emotion_model.keras / emotion_model.h5).")
+    print("[ML] Run 'python train_model.py' to train a new model.")
 
 # Global lock for MediaPipe (thread safety)
 mp_lock = threading.Lock()
 
-# Function to detect facial landmarks using MediaPipe
-def detect_landmarks(image):
-    mp_face_mesh = mp.solutions.face_mesh
-    with mp_lock:
-        with mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1) as face_mesh:
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            results = face_mesh.process(rgb_image)
-            if results.multi_face_landmarks:
-                h, w, _ = image.shape
-                landmarks = []
-                for lm in results.multi_face_landmarks[0].landmark:
-                    x, y = int(lm.x * w), int(lm.y * h)
-                    landmarks.append([x, y])
-                return np.array(landmarks)
-            return None
+# --- Face Detection (OpenCV) -----------------------------------------------------------
 
-# Function to detect faces using MediaPipe (for bounding boxes)
 def detect_faces(image):
-    mp_face_detection = mp.solutions.face_detection
-    with mp_lock:
-        with mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5) as face_detection:
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            results = face_detection.process(rgb_image)
-            faces = []
-            if results.detections:
-                h, w, _ = image.shape
-                for detection in results.detections:
-                    bbox = detection.location_data.relative_bounding_box
-                    x1 = int(bbox.xmin * w)
-                    y1 = int(bbox.ymin * h)
-                    x2 = int((bbox.xmin + bbox.width) * w)
-                    y2 = int((bbox.ymin + bbox.height) * h)
-                    faces.append((x1, y1, x2, y2))
-            return faces
+    """Detect faces and return bounding boxes using OpenCV."""
+    grey = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Detect faces
+    faces_detected = face_cascade.detectMultiScale(grey, 1.3, 5)
+    
+    faces = []
+    for (x, y, w_box, h_box) in faces_detected:
+        faces.append((x, y, x + w_box, y + h_box))
+    return faces
+
+
+def detect_landmarks(image):
+    """
+    Fallback for landmarks using face detection. 
+    Since mediapipe.solutions is missing, we just check for face presence.
+    """
+    faces = detect_faces(image)
+    return faces if faces else None
+
+
+# --- Core Prediction Pipeline -----------------------------------------------------------
+
+def _preprocess_face(face_img):
+    """
+    Convert a BGR face crop to the exact format used during FER-2013 training:
+    - Convert to greyscale (FER images are single-channel)
+    - Apply CLAHE for adaptive contrast enhancement (helps in different lighting)
+    - Resize to MODEL_INPUT_SIZE
+    - Normalise pixel values to [0, 1]
+    - Return shape (1, H, W, 1) ready for model.predict()
+    """
+    grey = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    grey = clahe.apply(grey)
+    resized = cv2.resize(grey, MODEL_INPUT_SIZE, interpolation=cv2.INTER_AREA)
+    normalised = resized.astype(np.float32) / 255.0
+    return normalised.reshape(1, *MODEL_INPUT_SIZE, 1)
+
+
+def _predict_single(face_array):
+    """Run inference and return raw probability array."""
+    return model.predict(face_array, verbose=0)[0]
+
 
 def predict_emotion(image):
+    """
+    High-accuracy emotion prediction pipeline:
+    1. Detect face bounding box and crop to face region
+    2. Greyscale + CLAHE preprocessing (matches FER-2013 training)
+    3. Test-Time Augmentation: average predictions from original + horizontal flip
+    4. Confidence thresholding: mark low-confidence predictions as 'uncertain'
+    5. Return full probability dict for all 7 emotions
+    """
     if model is None:
-        return {'error': 'Model not loaded'}
-    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    resized = cv2.resize(rgb_image, (48, 48)) / 255.0
-    prediction = model.predict(np.expand_dims(resized, axis=0))[0]
-    emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
-    return {emotion_labels[i]: float(prediction[i]) for i in range(len(emotion_labels))}
+        return {'error': 'Model not loaded. Run train_model.py to create a model.'}
+
+    try:
+        h, w = image.shape[:2]
+
+        # Step 1: Detect and crop to face region
+        faces = detect_faces(image)
+        if faces:
+            x1, y1, x2, y2 = faces[0]  # Use the first detected face
+            # Add a small padding (10%) around the bounding box for context
+            pad_x = int((x2 - x1) * 0.10)
+            pad_y = int((y2 - y1) * 0.10)
+            x1 = max(0, x1 - pad_x)
+            y1 = max(0, y1 - pad_y)
+            x2 = min(w, x2 + pad_x)
+            y2 = min(h, y2 + pad_y)
+            face_crop = image[y1:y2, x1:x2]
+        else:
+            # Fallback: use full image (e.g. for close-up photos)
+            face_crop = image
+
+        # Step 2: Preprocess
+        processed = _preprocess_face(face_crop)
+
+        # Step 3: Test-Time Augmentation (TTA) — horizontal flip
+        # The face mesh is roughly symmetric, so averaging orig + flipped
+        # stabilises predictions significantly
+        flipped = np.flip(face_crop, axis=1).copy()  # horizontal mirror
+        processed_flip = _preprocess_face(flipped)
+
+        pred_orig = _predict_single(processed)
+        pred_flip = _predict_single(processed_flip)
+
+        # Average the two predictions
+        prediction = (pred_orig + pred_flip) / 2.0
+
+        # Step 4: Build result dict
+        scores = {EMOTION_LABELS[i]: float(prediction[i]) for i in range(len(EMOTION_LABELS))}
+
+        # Step 5: Confidence thresholding
+        dominant_score = max(scores.values())
+        if dominant_score < CONFIDENCE_THRESHOLD:
+            # Mark as uncertain — the calling code should handle this gracefully
+            scores['_uncertain'] = True
+
+        return scores
+
+    except Exception as exc:
+        logging.error(f"[predict_emotion] Exception: {exc}", exc_info=True)
+        return {'error': str(exc)}
 
 class EmotionTracker:
+    """
+    Thread-safe tracker that aggregates emotion predictions across video frames.
+    Uses Exponential Moving Average (EMA) weighting so that more recent frames
+    contribute more to the dominant emotion result, reducing visual jitter.
+    """
+    WINDOW_SIZE = 10        # Keep last N frames in memory
+    EMA_ALPHA   = 0.6       # Weight for the most recent frame ( >0.5 = recency bias )
+
     def __init__(self):
-        self.emotion_scores = []
+        self.emotion_scores = []   # List of (scores_dict, timestamp)
+        self.ema_scores = {}       # Running EMA
         self.lock = threading.Lock()
-    
+
     def add_emotion(self, scores):
+        # Strip internal keys before storing
+        clean = {k: v for k, v in scores.items() if not k.startswith('_')}
         with self.lock:
-            self.emotion_scores.append((scores, datetime.now()))
-    
+            self.emotion_scores.append((clean, datetime.now()))
+            # Keep a sliding window
+            if len(self.emotion_scores) > self.WINDOW_SIZE:
+                self.emotion_scores.pop(0)
+            # Update EMA
+            if not self.ema_scores:
+                self.ema_scores = dict(clean)
+            else:
+                for emotion in EMOTION_LABELS:
+                    new_val = clean.get(emotion, 0.0)
+                    prev    = self.ema_scores.get(emotion, 0.0)
+                    self.ema_scores[emotion] = self.EMA_ALPHA * new_val + (1 - self.EMA_ALPHA) * prev
+
     def get_results(self):
         with self.lock:
             if not self.emotion_scores:
-                return "neutral", {"neutral": 1.0}
+                return "neutral", {"neutral": 100.0}
+            # Prefer EMA scores — they are temporally smoothed
+            if self.ema_scores:
+                total = sum(self.ema_scores.values())
+                if total > 0:
+                    pct = {e: (v / total) * 100 for e, v in self.ema_scores.items()}
+                    dominant = max(pct, key=pct.get)
+                    return dominant, pct
+            # Fallback: simple accumulation over window
             emotion_totals = {}
-            for scores, _ in self.emotion_scores:
-                for emotion, score in scores.items():
+            for s, _ in self.emotion_scores:
+                for emotion, score in s.items():
                     if score > 0:
                         emotion_totals[emotion] = emotion_totals.get(emotion, 0) + score
-            total_score = sum(emotion_totals.values())
-            if total_score == 0:
-                return "neutral", {"neutral": 1.0}
-            emotion_percentages = {emotion: (score / total_score) * 100 for emotion, score in emotion_totals.items()}
-            dominant_emotion = max(emotion_percentages, key=emotion_percentages.get)
-            return dominant_emotion, emotion_percentages
-    
+            total = sum(emotion_totals.values())
+            if total == 0:
+                return "neutral", {"neutral": 100.0}
+            pct = {e: (v / total) * 100 for e, v in emotion_totals.items()}
+            return max(pct, key=pct.get), pct
+
     def clear(self):
         with self.lock:
             self.emotion_scores = []
+            self.ema_scores = {}
 
 emotion_trackers = {}
 
 # Session validation middleware
 @app.before_request
 def validate_session():
+    # Skip validation for static files and non-auth routes
+    if request.endpoint in ['login', 'register', 'static', 'contact', 'about']:
+        return
+        
     if 'session_token' in session and 'user_id' in session:
         session_record = SessionHistory.query.filter_by(
             user_id=session['user_id'], 
@@ -163,12 +284,16 @@ def validate_session():
         ).first()
         if not session_record:
             session.clear()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({'error': 'Your session is invalid. Please log in again.'}), 401
             flash('Your session is invalid. Please log in again.', 'warning')
             return redirect(url_for('login'))
         if session_record.expires_at and datetime.now() > session_record.expires_at:
             session_record.logout_time = datetime.now()
             db.session.commit()
             session.clear()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({'error': 'Your session has expired. Please log in again.'}), 401
             flash('Your session has expired. Please log in again.', 'warning')
             return redirect(url_for('login'))
 
@@ -480,23 +605,32 @@ def contact():
 def process_image():
     if 'user_id' not in session:
         return jsonify({'error': 'Not logged in'}), 401
-    file = request.files['image']
+    file = request.files.get('image')
     if not file:
-        return jsonify({'error': 'No image uploaded'}), 400
+        return jsonify({'error': 'No image uploaded'})
     image = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_COLOR)
     if image is None:
-        return jsonify({'error': 'Invalid image'}), 400
+        return jsonify({'error': 'Invalid image file'})
+
+    if model is None:
+        return jsonify({'error': '⚠️ Emotion model not loaded. Please run train_model.py to create emotion_model.keras first.'})
+
     landmarks = detect_landmarks(image)
     if landmarks is None:
-        return jsonify({'error': 'No face detected'}), 400
-        
+        return jsonify({'error': '😶 No face detected. Ensure your face is well-lit and facing the camera.'})
+
     scores = predict_emotion(image)
     if 'error' in scores:
-        return jsonify({'error': scores['error']}), 500
-        
+        return jsonify({'error': scores['error']})
+
+    # Remove internal helper keys before returning
+    is_uncertain = scores.pop('_uncertain', False)
+    if is_uncertain:
+        return jsonify({'error': '🤔 Confidence too low. Improve lighting or move closer to the camera.'})
+
     dominant_emotion = max(scores, key=scores.get)
     confidence = float(scores[dominant_emotion])
-    
+
     try:
         new_analysis = EmotionAnalysis(
             user_id=session['user_id'],
@@ -506,9 +640,8 @@ def process_image():
         db.session.add(new_analysis)
         db.session.commit()
     except Exception as e:
-        print(f"Database error: {e}")
-        # Continue even if DB fails
-        
+        logging.warning(f"DB save failed (non-fatal): {e}")
+
     return jsonify({
         'emotion': dominant_emotion,
         'scores': json.dumps(scores)
@@ -548,6 +681,10 @@ def process_upload():
         flash('No selected file', 'danger')
         return redirect(url_for('upload'))
     logger.debug(f"Processing file: {file.filename}")
+    # Check if model is loaded before doing any work
+    if model is None:
+        flash('⚠️ Emotion model is not loaded. Please run python train_model.py to create the model first.', 'danger')
+        return redirect(url_for('upload'))
     try:
         image = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_COLOR)
         if image is None:
@@ -606,6 +743,8 @@ def video_feed():
                 if not ret:
                     break
                 current_time = time.time()
+                dominant_emotion = 'neutral'  # safe default
+                confidence = 0.0
                 if current_time - last_emotion_time > emotion_interval:
                     emotion_scores = predict_emotion(frame)
                     if 'error' not in emotion_scores:
@@ -716,25 +855,6 @@ def end_session():
     user_id = session['user_id']
     if user_id in emotion_trackers:
         dominant_emotion, scores = emotion_trackers[user_id].get_results()
-        emotions = list(scores.keys())
-        values = list(scores.values())
-        color_map = {'angry': 'red', 'disgust': 'green', 'fear': 'purple', 'happy': 'yellow',
-                     'neutral': 'gray', 'sad': 'blue', 'surprise': 'orange'}
-        colors = [color_map.get(e, 'gray') for e in emotions]
-        plt.figure(figsize=(6, 6))
-        plt.pie(values, labels=emotions, colors=colors, autopct='%1.1f%%', startangle=90)
-        plt.axis('equal')
-        img = io.BytesIO()
-        plt.savefig(img, format='png', bbox_inches='tight')
-        img.seek(0)
-        pie_chart_base64 = base64.b64encode(img.getvalue()).decode()
-        new_analysis = EmotionAnalysis(
-            user_id=user_id,
-            emotion=dominant_emotion,
-            confidence=max(scores.values()) / 100
-        )
-        db.session.add(new_analysis)
-        db.session.commit()
         emotion_trackers[user_id].clear()
         suggestions_dict = {
             'happy': ["Keep spreading positivity—share your joy with others! <a href='https://www.youtube.com/watch?v=X1GNc70-584' target='_blank'>Watch this podcast</a>", "Try a new hobby to maintain your high spirits.", "Reflect on what’s making you happy and how to sustain it."],
@@ -777,18 +897,6 @@ def result():
         scores = json.loads(scores_str.replace("'", '"'))
     except json.JSONDecodeError:
         scores = {}
-    emotions = list(scores.keys())
-    values = list(scores.values())
-    color_map = {'angry': 'red', 'disgust': 'green', 'fear': 'purple', 'happy': 'yellow',
-                 'neutral': 'gray', 'sad': 'blue', 'surprise': 'orange'}
-    colors = [color_map.get(e, 'gray') for e in emotions]
-    plt.figure(figsize=(6, 6))
-    plt.pie(values, labels=emotions, colors=colors, autopct='%1.1f%%', startangle=90)
-    plt.axis('equal')
-    img = io.BytesIO()
-    plt.savefig(img, format='png', bbox_inches='tight')
-    img.seek(0)
-    pie_chart_base64 = base64.b64encode(img.getvalue()).decode()
     suggestions_dict = {
         'happy': ["Keep spreading positivity—share your joy with others! <a href='https://www.youtube.com/watch?v=X1GNc70-584' target='_blank'>Watch this podcast</a>", "Try a new hobby to maintain your high spirits.", "Reflect on what's making you happy and how to sustain it."],
         'sad': ["Take a moment to relax—maybe watch a comforting movie. <a href='https://www.youtube.com/watch?v=h-3bixYKBFg' target='_blank'>Watch this podcast</a>", "Talk to a friend or loved one for support.", "Consider journaling your feelings to process them."],
@@ -802,7 +910,6 @@ def result():
     return render_template('result.html',
                          emotion=emotion,
                          scores=scores,
-                         pie_chart_data=pie_chart_base64,
                          suggestions=suggestions)
 
 with app.app_context():

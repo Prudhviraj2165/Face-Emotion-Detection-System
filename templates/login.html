@@ -1,350 +1,287 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Emotion Recognition</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+{% extends 'layout.html' %}
+
+{% block title %}Login - FeelCam{% endblock %}
+
+{% block head %}
+<style>
+    body {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+    
+    /* Override nav for login screen since we don't need the top nav */
+    nav { display: none; }
+    
+    .login-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100vh;
+        padding: 20px;
+    }
+
+    .login-container {
+        display: flex;
+        width: 100%;
+        max-width: 1000px;
+        min-height: 600px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+
+    .login-image {
+        flex: 1.2;
+        position: relative;
+        overflow: hidden;
+        display: none; /* Hide on small screens */
+    }
+
+    @media (min-width: 768px) {
+        .login-image {
+            display: block;
         }
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            background-color: white;
-        }
+    .login-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.8;
+    }
 
-        .container {
-            display: flex;
-            height: 100%;
-            width: 100%;
-        }
+    .login-image::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(0deg, var(--primary-color) 0%, rgba(13, 27, 42, 0) 100%);
+    }
 
-        .image-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+    .brand-overlay {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        color: white;
+        z-index: 10;
+        max-width: 80%;
+    }
 
-        .image-container img {
-            max-width: 100%;
-            max-height: 100%;
-        }
+    .brand-overlay h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
 
-        .form-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: white;
-        }
+    .brand-overlay p {
+        font-size: 1.1rem;
+        color: var(--highlight-color);
+        line-height: 1.5;
+    }
 
-        .login-container {
-            background-color: #e6f0ff;
-            width: 90%;
-            max-width: 450px;
-            padding: 40px 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+    .login-form-area {
+        flex: 1;
+        padding: 60px 50px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-        .login-icon {
-            text-align: center;
-            color: #3c88c8;
-            margin-bottom: 30px;
-        }
+    .login-header {
+        margin-bottom: 40px;
+    }
 
-        .flash-message {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
+    .login-header h3 {
+        color: var(--primary-color);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
 
-        .flash-danger {
-            background-color: rgba(255, 77, 77, 0.2);
-            color: #d32f2f;
-        }
+    .login-header p {
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
 
-        .flash-success {
-            background-color: rgba(77, 255, 77, 0.2);
-            color: #388e3c;
-        }
+    .password-toggle {
+        position: absolute;
+        right: 16px;
+        top: 40px;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 5px;
+    }
 
-        .flash-warning {
-            background-color: rgba(255, 193, 7, 0.2);
-            color: #856404;
-        }
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+    }
 
-        .login-title {
-            color: #333;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            text-align: center;
-        }
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-main);
+    }
 
-        .login-subtitle {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 25px;
-            text-align: center;
-        }
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary-color);
+    }
 
-        .input-field {
-            position: relative;
-            margin-bottom: 20px;
-        }
+    .forgot-pass {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
 
-        .input-field input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background-color: white;
-            color: #333;
-            font-size: 16px;
-            outline: none;
-        }
+    .forgot-pass:hover {
+        color: var(--primary-color);
+        text-decoration: underline;
+    }
 
-        .input-field input:focus {
-            border-color: #3c88c8;
-        }
+    .btn-submit {
+        width: 100%;
+        padding: 16px;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
 
-        .input-field input::placeholder {
-            color: #999;
-        }
+    .signup-link {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
 
-        .eye-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-            cursor: pointer;
-        }
+    .signup-link a {
+        color: var(--primary-color);
+        font-weight: 700;
+        text-decoration: none;
+        margin-left: 5px;
+    }
 
-        .forgot-password {
-            text-align: right;
-            margin: 10px 0;
-        }
+    .signup-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
 
-        .forgot-password a {
-            color: #3c88c8;
-            font-size: 12px;
-            text-decoration: none;
-        }
-
-        .forgot-password a:hover {
-            text-decoration: underline;
-        }
-
-        .remember-me {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            color: #666;
-            font-size: 12px;
-        }
-
-        .remember-me input {
-            width: auto;
-            margin-right: 8px;
-        }
-
-        .login-button {
-            width: 100%;
-            padding: 12px;
-            margin: 20px 0 10px;
-            border: none;
-            border-radius: 6px;
-            background-color: #3c88c8;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .login-button:hover {
-            background-color: #2d6da3;
-        }
-
-        .signup-text {
-            color: #666;
-            font-size: 12px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .signup-text a {
-            color: #3c88c8;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .signup-text a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .image-container {
-                flex: none;
-                height: 40%;
-            }
-
-            .form-container {
-                flex: none;
-                height: 60%;
-            }
-
-            .login-container {
-                height: auto;
-                width: 90%;
-                padding: 30px 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="image-container">
-            <img src="{{ url_for('static', filename='imagelogin.jpg') }}" alt="Person using laptop">
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-container">
+        <!-- Visual Side -->
+        <div class="login-image">
+            <img src="{{ url_for('static', filename='imagelogin.jpg') }}" alt="AI Emotion Analysis">
+            <div class="brand-overlay">
+                <h2><i class="fas fa-eye"></i> FeelCam</h2>
+                <p>Unlock profound insights through real-time facial expression analysis.</p>
+            </div>
         </div>
+        
+        <!-- Form Side -->
+        <div class="login-form-area">
+            <div class="login-header">
+                <h3>Welcome Back</h3>
+                <p>Please enter your details to sign in.</p>
+            </div>
 
-        <div class="form-container">
-            <div class="login-container">
-                <div class="login-icon">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="48"
-                        height="48"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        <circle cx="12" cy="16" r="1"></circle>
-                    </svg>
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="john@example.com" required>
                 </div>
 
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    <i class="fas fa-eye-slash password-toggle" id="password-toggle"></i>
+                </div>
 
-                <h1 class="login-title">Login</h1>
-                <p class="login-subtitle">Welcome back! Please login to your account</p>
-
-                <form method="POST" action="{{ url_for('login') }}">
-                    <div class="input-field">
-                        <input type="email" name="email" placeholder="Email Address" required>
-                    </div>
-
-                    <div class="input-field">
-                        <input type="password" id="password" name="password" placeholder="Password" required>
-                        <i class="fas fa-eye-slash eye-icon" id="password-toggle"></i>
-                    </div>
-
-                    <div class="forgot-password">
-                        <a href="#">Forgot Password?</a>
-                    </div>
-
-                    <div class="remember-me">
+                <div class="form-options">
+                    <label class="checkbox-group">
                         <input type="checkbox" id="remember_me" name="remember_me">
-                        <label for="remember_me">Remember me</label>
-                        <span style="margin-left: 10px; font-size: 12px; color: #666;">(Keeps you logged in for 1 day)</span>
-                    </div>
-
-                    <button type="submit" class="login-button">LOGIN</button>
-                </form>
-
-                <div class="signup-text">
-                    Don't have an account yet? <a href="{{ url_for('register') }}">Sign Up</a>
+                        <span>Remember me for 1 day</span>
+                    </label>
+                    <a href="#" class="forgot-pass">Forgot Password?</a>
                 </div>
+
+                <button type="submit" class="btn btn-primary btn-submit">
+                    Sign In <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="signup-link">
+                Don't have an account? <a href="{{ url_for('register') }}">Create an account</a>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script>
-        const passwordToggle = document.getElementById('password-toggle');
-        const passwordField = document.getElementById('password');
-        const rememberMeCheckbox = document.getElementById('remember_me');
-    
-        passwordToggle.addEventListener('click', function() {
-            togglePasswordVisibility(passwordField, this);
-        });
-    
-        function togglePasswordVisibility(field, icon) {
-            if (field.type === "password") {
-                field.type = "text";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            } else {
-                field.type = "password";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            }
+{% block scripts %}
+<script>
+    const passwordToggle = document.getElementById('password-toggle');
+    const passwordField = document.getElementById('password');
+    const rememberMeCheckbox = document.getElementById('remember_me');
+
+    passwordToggle.addEventListener('click', function() {
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            this.classList.remove("fa-eye-slash");
+            this.classList.add("fa-eye");
+        } else {
+            passwordField.type = "password";
+            this.classList.remove("fa-eye");
+            this.classList.add("fa-eye-slash");
         }
-    
-        // Heartbeat to keep session alive for non-remember-me sessions
-        function sendHeartbeat() {
-            fetch('/heartbeat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    window.location.href = '/login';
-                }
-            })
-            .catch(error => {
-                console.error('Heartbeat error:', error);
-            });
-        }
-    
-        // Invalidate session on tab closure for non-remember-me sessions
-        function invalidateSession() {
-            console.log('Tab closing, invalidating session');
-            const rememberMe = localStorage.getItem('remember_me') === 'true';
-            if (!rememberMe) {
-                navigator.sendBeacon('/invalidate_session', JSON.stringify({}));
-                console.log('Beacon sent for invalidation');
-            }
-        }
-    
-        // Store remember_me state during form submission
-        document.querySelector('form').addEventListener('submit', function() {
+    });
+
+    // Heartbeat logic
+    function sendHeartbeat() {
+        fetch('/heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        }).then(response => response.json()).then(data => {
+            if (!data.success) { window.location.href = '/login'; }
+        }).catch(err => console.error(err));
+    }
+
+    function invalidateSession() {
+        const rememberMe = localStorage.getItem('remember_me') === 'true';
+        if (!rememberMe) { navigator.sendBeacon('/invalidate_session', JSON.stringify({})); }
+    }
+
+    const form = document.querySelector('form');
+    if(form) {
+        form.addEventListener('submit', function() {
             localStorage.setItem('remember_me', rememberMeCheckbox.checked);
         });
-    
-        // Start heartbeat only if user is logged in
-        /* eslint-disable */
-        {% if session.user_id %}
-            setInterval(sendHeartbeat, 30000); // Every 30 seconds
-            window.addEventListener('beforeunload', invalidateSession);
-        {% endif %}
-        /* eslint-enable */
-    </script>
-</body>
-</html>
+    }
+
+    /* eslint-disable */
+    {% if session.user_id %}
+        setInterval(sendHeartbeat, 30000);
+        window.addEventListener('beforeunload', invalidateSession);
+    {% endif %}
+    /* eslint-enable */
+</script>
+{% endblock %}

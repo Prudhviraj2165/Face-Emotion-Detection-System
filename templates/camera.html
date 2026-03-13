@@ -1,245 +1,280 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera - Emotion Recognition</title>
-    <style>
-        :root {
-            --teal-green: #006158;
-            --light-teal: rgba(0, 97, 88, 0.8);
-            --cream-bg: #f8f5e6;
-        }
+{% extends 'layout.html' %}
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-            background-color: var(--cream-bg);
-            font-family: Arial, sans-serif;
-            position: relative;
-        }
+{% block title %}Capture - FeelCam{% endblock %}
 
-        .camera-container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 30px;
-            width: 480px;
-            border-radius: 15px;
-            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
-            text-align: center;
-            border: 3px solid var(--teal-green);
-        }
+{% block head %}
+<style>
+    .capture-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 80px);
+        padding: 40px 20px;
+    }
 
-        .page-title {
-            color: var(--teal-green);
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
+    .camera-card {
+        width: 100%;
+        max-width: 800px;
+        position: relative;
+    }
 
-        .camera-view {
-            width: 100%;
-            height: 360px;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            border: 1px solid #ddd;
-        }
+    .video-viewport {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: black;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        .camera-view video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    #video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1); /* Mirror effect */
+    }
 
-        .capture-button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            background-color: var(--teal-green);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
+    .scan-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        background: linear-gradient(rgba(13, 27, 42, 0) 0%, rgba(65, 90, 119, 0.05) 50%, rgba(13, 27, 42, 0) 100%);
+        background-size: 100% 200%;
+        animation: scanline 4s linear infinite;
+    }
 
-        .capture-button:hover {
-            background-color: #00514c;
-            transform: translateY(-2px);
-            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25);
-        }
-        
-        .capture-button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+    @keyframes scanline {
+        0% { background-position: 0 -100%; }
+        100% { background-position: 0 100%; }
+    }
 
-        .camera-instructions {
-            color: #666;
-            font-size: 14px;
-            margin-top: 20px;
-            background-color: rgba(0, 97, 88, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            line-height: 1.4;
-        }
+    .camera-controls {
+        margin-top: 30px;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        width: 100%;
+    }
 
-        /* Loading indicator */
-        .loading {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-        }
+    .capture-trigger {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: white;
+        border: 4px solid var(--primary-color);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+    }
 
-        .loading-circle {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 97, 88, 0.3);
-            border-top: 5px solid var(--teal-green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+    .capture-trigger::after {
+        content: '';
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        transition: transform 0.2s;
+    }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .capture-trigger:hover {
+        transform: scale(1.1);
+    }
 
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 5;
-        }
-        
-        .error-message {
-            display: none;
-            color: #e74c3c;
-            background-color: rgba(231, 76, 60, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-weight: bold;
-        }
+    .capture-trigger:active::after {
+        transform: scale(0.9);
+    }
 
-        @media (max-width: 600px) {
-            .camera-container {
-                width: 90%;
-                padding: 20px;
-            }
+    .status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 5;
+    }
 
-            .camera-view {
-                height: 300px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="camera-container">
-        <h2 class="page-title">Emotion Recognition</h2>
-        <div class="camera-view">
-            <video id="video" autoplay></video>
-        </div>
-        <button class="capture-button" id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
-        <div class="camera-instructions">
-            Position your face in the center of the frame. Make sure your face is well-lit and clearly visible for the best results.
-        </div>
-        <div class="error-message" id="errorMessage"></div>
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ff0000;
+        animation: blink 1s infinite alternate;
+    }
+
+    @keyframes blink {
+        from { opacity: 1; }
+        to { opacity: 0.3; }
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(13, 27, 42, 0.8);
+        backdrop-filter: blur(10px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        z-index: 10;
+        border-radius: 20px;
+    }
+
+    .loader {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+        margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .error-msg {
+        background: rgba(231, 111, 81, 0.1);
+        color: var(--danger);
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 20px;
+        width: 100%;
+        text-align: center;
+        display: none;
+        border: 1px solid var(--danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="capture-page">
+    <div class="text-center mb-4">
+        <h2 class="hero-title" style="font-size: 2.5rem;">Smile for <span>Analysis</span></h2>
+        <p class="text-muted">Ensure your face is well-lit and fits within the frame.</p>
     </div>
 
-    <!-- Loading indicator -->
-    <div class="overlay" id="overlay"></div>
-    <div class="loading" id="loading">
-        <div class="loading-circle"></div>
-    </div>
+    <div class="camera-card">
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            LIVE FEED
+        </div>
+        
+        <div class="video-viewport">
+            <video id="video" autoplay playsinline></video>
+            <div class="scan-overlay"></div>
+            
+            <div class="loading-overlay" id="loading">
+                <div class="loader"></div>
+                <h4>Analyzing Expression...</h4>
+            </div>
+        </div>
+        
+        <div id="errorMessage" class="error-msg"></div>
 
-    <script>
+        <div class="camera-controls">
+            <button class="btn btn-accent" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div class="capture-trigger" id="captureBtn" title="Capture & Analyze"></div>
+            <div style="width: 100px;"></div> <!-- Spacer for symmetry -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
     const video = document.getElementById('video');
     const captureBtn = document.getElementById('captureBtn');
     const loading = document.getElementById('loading');
-    const overlay = document.getElementById('overlay');
     const errorMessage = document.getElementById('errorMessage');
 
     // Access the camera
-    navigator.mediaDevices.getUserMedia({ video: true })
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: "user"
+            } 
+        })
         .then((stream) => {
             video.srcObject = stream;
         })
         .catch((err) => {
             console.error("Error accessing the camera: ", err);
-            errorMessage.textContent = "Could not access the camera. Please ensure camera permissions are enabled.";
+            errorMessage.textContent = "Camera access denied. Please check your browser permissions.";
             errorMessage.style.display = 'block';
-            captureBtn.disabled = true;
         });
+    } else {
+        errorMessage.textContent = "Your browser does not support camera access.";
+        errorMessage.style.display = 'block';
+    }
+
+    captureBtn.addEventListener('click', capturePhoto);
 
     function capturePhoto() {
-        // Show loading indicator
-        loading.style.display = 'block';
-        overlay.style.display = 'block';
-        captureBtn.disabled = true;
+        loading.style.display = 'flex';
         errorMessage.style.display = 'none';
 
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const context = canvas.getContext('2d');
+        
+        // Mirror the image back for the capture
+        context.translate(canvas.width, 0);
+        context.scale(-1, 1);
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Convert the image to a Blob and send it via FormData
         canvas.toBlob((blob) => {
             const formData = new FormData();
-            formData.append('image', blob, 'photo.png');
+            formData.append('image', blob, 'capture.png');
 
             fetch('/process_image', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => response.json())   // Always parse JSON first
             .then(data => {
-                // Hide loading indicator
                 loading.style.display = 'none';
-                overlay.style.display = 'none';
-                captureBtn.disabled = false;
-
                 if (data.error) {
-                    // Display error message to user
-                    errorMessage.textContent = data.error;
+                    errorMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.error}`;
                     errorMessage.style.display = 'block';
                 } else {
                     window.location.href = `/result?emotion=${encodeURIComponent(data.emotion)}&scores=${encodeURIComponent(data.scores)}`;
                 }
             })
             .catch((error) => {
-                // Hide loading indicator
                 loading.style.display = 'none';
-                overlay.style.display = 'none';
-                captureBtn.disabled = false;
-
-                console.error('Error:', error);
-                errorMessage.textContent = "An error occurred while processing the image. Please try again.";
+                console.error('Fetch error:', error);
+                errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Network error. Please try again.';
                 errorMessage.style.display = 'block';
             });
         }, 'image/png');
     }
-    </script>
-</body>
-</html>
+</script>
+{% endblock %}
