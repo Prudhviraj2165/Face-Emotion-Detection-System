@@ -1,5 +1,11 @@
 # 👁️ FeelCam: AI-Powered Face Emotion Detection System
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Prudhviraj2165/Face-Emotion-Detection-System)
+[![Python Version](https://img.shields.io/badge/Python-3.8+-yellow?logo=python)](https://www.python.org/)
+[![Flask Framework](https://img.shields.io/badge/Framework-Flask-lightgrey?logo=flask)](https://flask.palletsprojects.com/)
+
+> **[🚀 Access Project Repository](https://github.com/Prudhviraj2165/Face-Emotion-Detection-System)**
+
 FeelCam is a modern, real-time emotion recognition web application. It uses Deep Learning to analyze facial expressions through live camera feeds or static image uploads, providing detailed emotional health insights and personalized recommendations.
 
 ![Dashboard Preview](static/images/hero-bg.jpg) <!-- Placeholder for actual screenshot if available -->
